@@ -33,7 +33,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8 text-slate-900">
+    <div className="min-h-screen bg-blue-900 p-8 text-white">
       {/* HEADER SECTION */}
       <header className="max-w-6xl mx-auto mb-10 flex justify-between items-end">
         <div>
