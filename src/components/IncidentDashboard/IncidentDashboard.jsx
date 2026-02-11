@@ -128,7 +128,7 @@ export default function Dashboard() {
               }`}
             >
               <span className="text-xl">{item.icon}</span>
-              <span className="hidden md:block font-bold text-xs uppercase tracking-wider">{item.label}</span>
+              / <span className="hidden md:block font-bold text-xs uppercase tracking-wider">{item.label}</span>
             </button>
           ))}
         </nav>
