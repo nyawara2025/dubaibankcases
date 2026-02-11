@@ -8,10 +8,10 @@ export const API_CONFIG = {
   
   // Specific SOC endpoints
   ENDPOINTS: {
-    LOGIN: "bank/auth/login",
-    FETCH_INCIDENTS: "/bank/incidents",
-    REPORT_INCIDENT: "/bank/log-incident",
-    USER_LOGS: "/bank/auth/audit-logs"
+    LOGIN: "webhook/bank/auth/login",
+    FETCH_INCIDENTS: "webhook/bank/incidents",
+    REPORT_INCIDENT: "webhook/bank/log-incident",
+    USER_LOGS: "webhook/bank/auth/audit-logs"
   },
 
   // Request timeout in milliseconds (10s)
