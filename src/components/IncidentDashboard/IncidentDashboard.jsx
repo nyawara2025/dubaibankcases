@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, ShieldCheck, Clock, ShieldAlert, Plus, X } from 'lucide-react';
 import axios from 'axios';
 
 export default function Dashboard() {
@@ -7,8 +6,7 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // FETCHING VIA n8n WEBHOOK
-  const FETCH_WEBHOOK_URL = "https://n8n.tenear.com/webhook/bank/incidents"; // Setup a Webhook node in n8n that queries Postgres and returns the result
+  const FETCH_WEBHOOK_URL = "https://n8n.tenear.com/webhook/bank/incidents";
 
   useEffect(() => {
     fetchIncidents();
@@ -17,85 +15,76 @@ export default function Dashboard() {
   async function fetchIncidents() {
     try {
       const response = await axios.get(FETCH_WEBHOOK_URL);
-      
-      // FIX: If response.data is an object, wrap it in []. If it's already an array, keep it.
-      const data = Array.isArray(response.data) 
-        ? response.data 
-        : (response.data ? [response.data] : []);
-
+      const data = Array.isArray(response.data) ? response.data : (response.data ? [response.data] : []);
       setIncidents(data);
     } catch (err) {
-      console.error("n8n Fetch Error:", err);
-      setIncidents([]); // Fallback to empty array on error
+      console.error("Fetch Error:", err);
+      setIncidents([]);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-blue-900 p-8 text-white">
-      {/* HEADER SECTION */}
-      <header className="max-w-6xl mx-auto mb-10 flex justify-between items-end">
+    // DARK THEME FORCED: Using slate-950 to ensure no white background bleed
+    <div className="min-h-screen bg-[#020617] text-slate-300 p-4 md:p-10 font-sans selection:bg-indigo-500/30">
+      
+      {/* COMPACT RESPONSIVE HEADER */}
+      <header className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">Security Command Center</h1>
-          <p className="text-slate-500 font-medium mt-1">Central Bank Incident Management System</p>
+          <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight italic">
+            SOC <span className="text-indigo-500">COMMAND</span>
+          </h1>
+          <p className="text-[10px] md:text-xs font-bold text-slate-500 tracking-[0.2em] uppercase">
+            Bank Incident Manager • Live Feed
+          </p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all"
+          className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg shadow-indigo-950/50 transition-all active:scale-95"
         >
-          <Plus size={20}/> Log New Incident
+          ➕ Log Incident
         </button>
       </header>
 
-      {/* STAT CARDS - Visual "Whistles" */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <StatCard icon={<AlertTriangle className="text-orange-500" />} label="Active Cases" count={incidents.length} color="orange" />
-        <StatCard icon={<ShieldAlert className="text-red-500" />} label="Critical Threats" count={incidents.filter(i => i.severity === 'Critical').length} color="red" />
-        <StatCard icon={<ShieldCheck className="text-emerald-500" />} label="Compliance Score" count="98%" color="emerald" />
+      {/* COMPACT STATS GRID */}
+      <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-8">
+        <StatCard icon="🚨" label="Active" count={incidents.length} />
+        <StatCard icon="🔥" label="Critical" count={incidents.filter(i => i.severity === 'Critical').length} />
+        <StatCard icon="🛡️" label="Health" count="98%" className="col-span-2 md:col-span-1" />
       </div>
 
-      {/* RECENT INCIDENTS CARD */}
-      <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-        <div className="p-6 border-b border-slate-50 bg-slate-50/30">
-          <h2 className="text-lg font-bold text-slate-700">Live Incident Feed</h2>
+      {/* FEED CONTAINER */}
+      <div className="max-w-5xl mx-auto bg-slate-900/40 border border-slate-800/60 rounded-3xl overflow-hidden backdrop-blur-sm">
+        <div className="px-6 py-4 border-b border-slate-800/60 flex justify-between items-center bg-slate-900/20">
+          <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">Incident Logs</h2>
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
         </div>
-        <div className="divide-y divide-slate-50">
-          {incidents.map((incident) => (
-            <IncidentRow key={incident.id} incident={incident} />
-          ))}
+        <div className="divide-y divide-slate-800/40">
+          {incidents.length > 0 ? (
+            incidents.map((incident) => <IncidentRow key={incident.id} incident={incident} />)
+          ) : (
+            <div className="p-10 text-center text-slate-600 text-sm italic">No incidents reported...</div>
+          )}
         </div>
       </div>
 
-      {/* NEW INCIDENT MODAL */}
+      {/* MOBILE FRIENDLY MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6 border-b flex justify-between items-center">
-              <h3 className="text-xl font-bold">Report New Case</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X/></button>
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/90 backdrop-blur-sm">
+          <div className="bg-slate-900 border-t md:border border-slate-800 rounded-t-[2rem] md:rounded-[2rem] w-full max-w-md p-6 md:p-8 animate-in slide-in-from-bottom duration-300">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold text-white">Report Incident</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-xl">✕</button>
             </div>
-            <form className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-bold mb-1">Incident Title</label>
-                <input className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="e.g. Unauthorized Database Access" />
+            <form className="space-y-4">
+              <input className="w-full bg-slate-950 p-4 rounded-2xl border border-slate-800 text-sm outline-none focus:border-indigo-500" placeholder="Incident Name" />
+              <div className="grid grid-cols-2 gap-3">
+                <select className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-sm text-slate-400 outline-none"><option>Severity</option></select>
+                <select className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-sm text-slate-400 outline-none"><option>Status</option></select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold mb-1">Severity</label>
-                  <select className="w-full p-3 rounded-xl border border-slate-200">
-                    <option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold mb-1">Status</label>
-                  <select className="w-full p-3 rounded-xl border border-slate-200">
-                    <option>Open</option><option>In-Progress</option>
-                  </select>
-                </div>
-              </div>
-              <button className="w-full bg-slate-900 text-white p-4 rounded-xl font-bold mt-4 hover:bg-black transition-colors">
-                Submit Report to Bank Security
+              <button className="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold text-sm mt-2 hover:bg-indigo-500 transition-colors shadow-xl">
+                SEND ALERT
               </button>
             </form>
           </div>
@@ -105,36 +94,36 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ icon, label, count, color }) {
+function StatCard({ icon, label, count, className = "" }) {
   return (
-    <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-6">
-      <div className={`p-4 rounded-2xl bg-${color}-50`}>{icon}</div>
+    <div className={`bg-slate-900/60 p-4 md:p-6 rounded-2xl border border-slate-800/50 flex items-center gap-4 ${className}`}>
+      <span className="text-2xl md:text-3xl">{icon}</span>
       <div>
-        <p className="text-slate-500 font-bold text-sm uppercase tracking-wider">{label}</p>
-        <p className="text-3xl font-black">{count}</p>
+        <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">{label}</p>
+        <p className="text-xl md:text-2xl font-bold text-white leading-none">{count}</p>
       </div>
     </div>
   );
 }
 
 function IncidentRow({ incident }) {
-  const sevColors = { Critical: 'bg-red-500', High: 'bg-orange-500', Medium: 'bg-blue-500', Low: 'bg-slate-400' };
+  const sevMap = { Critical: '💀', High: '🟠', Medium: '🔵', Low: '⚪' };
   return (
-    <div className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
+    <div className="p-4 md:p-5 flex items-center justify-between hover:bg-slate-800/30 transition-colors">
       <div className="flex items-center gap-4">
-        <div className={`h-12 w-1 w-1 rounded-full ${sevColors[incident.severity]}`}></div>
+        <span className="text-lg">{sevMap[incident.severity] || '🔹'}</span>
         <div>
-          <h4 className="font-bold text-slate-800 text-lg">{incident.title}</h4>
-          <span className="text-sm text-slate-400 font-medium italic">{new Date(incident.created_at).toLocaleDateString()}</span>
+          <h4 className="text-sm md:text-base font-bold text-slate-200 line-clamp-1">{incident.title}</h4>
+          <p className="text-[10px] text-slate-500 font-medium">{new Date(incident.created_at).toLocaleDateString()}</p>
         </div>
       </div>
-      <div className="flex items-center gap-8">
-        <span className={`px-4 py-1.5 rounded-lg text-white text-xs font-black uppercase tracking-widest ${sevColors[incident.severity]}`}>
+      <div className="flex items-center gap-4 md:gap-8">
+        <span className="hidden md:inline text-[9px] font-black text-indigo-400 border border-indigo-500/30 px-2 py-1 rounded bg-indigo-500/10 uppercase tracking-widest">
           {incident.severity}
         </span>
         <div className="text-right">
-          <p className="text-xs font-bold text-slate-300 uppercase">Status</p>
-          <p className="font-bold text-slate-600">{incident.status}</p>
+          <p className="text-[9px] font-bold text-slate-600 uppercase">Status</p>
+          <p className="text-xs font-bold text-slate-400">{incident.status}</p>
         </div>
       </div>
     </div>
