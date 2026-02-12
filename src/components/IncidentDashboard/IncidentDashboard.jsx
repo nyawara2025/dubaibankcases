@@ -84,7 +84,7 @@ export default function Dashboard() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 font-sans">
-        <div className="w-full max-w-sm bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
+        <div className="w-20 max-w-sm bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
           <div className="text-center mb-8">
             // <h3 className="text-2xs font-black text-white italic tracking-tighter">
             //  SOC <span className="text-indigo-500">COMMAND</span>
