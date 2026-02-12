@@ -110,7 +110,7 @@ export default function Dashboard() {
       {/* SIDEBAR NAVIGATION */}
       <aside className="w-20 md:w-64 border-r border-slate-800/60 bg-slate-900/20 backdrop-blur-md flex flex-col sticky top-0 h-screen">
         <div className="p-6 mb-4">
-          <h1 className="hidden md:block text-xl font-black text-white italic">
+          <h1 className="block text-xl font-black text-white italic">
             SOC <span className="text-indigo-500">COMMAND</span>
           </h1>
           <div className="md:hidden text-2xl font-black text-indigo-500 text-center">S</div>
