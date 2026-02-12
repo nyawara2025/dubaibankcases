@@ -4,12 +4,9 @@ import { API_CONFIG } from '../../config/apiConfig';
 
 export default function Dashboard() {
   // --- AUTHENTICATION & UI STATE ---
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('incidents'); // Navigation state
-  const [loginData, setLoginData] = useState({ username: '', password: '' });
-  const [authError, setAuthError] = useState('');
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('incidents');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // --- DASHBOARD DATA STATE ---
   const [incidents, setIncidents] = useState([]);
@@ -26,47 +23,22 @@ export default function Dashboard() {
   useEffect(() => {
     const savedUser = localStorage.getItem('soc_user');
     const token = localStorage.getItem('soc_token');
-    if (savedUser && savedUser !== "undefined" && token && token !== "undefined") {
+    
+    if (savedUser && token) {
       try {
         setUser(JSON.parse(savedUser));
         setIsAuthenticated(true);
+        fetchIncidents();
       } catch (e) {
-        localStorage.removeItem('soc_user');
-        localStorage.removeItem('soc_token');
+        handleLogout();
       }
     }
   }, []);
 
-  useEffect(() => {
-    if (isAuthenticated) fetchIncidents();
-  }, [isAuthenticated]);
-
-  async function handleLogin(e) {
-    e.preventDefault();
-    setIsAuthLoading(true);
-    setAuthError('');
-    try {
-      const response = await apiClient.post(API_CONFIG.ENDPOINTS.LOGIN, {
-        username: loginData.username,
-        password: loginData.password
-      });
-      const { token, user } = response.data;
-      localStorage.setItem('soc_token', token);
-      localStorage.setItem('soc_user', JSON.stringify(user));
-      setUser(user);
-      setIsAuthenticated(true);
-    } catch (err) {
-      setAuthError(err.response?.data?.message || 'ACCESS DENIED: UNAUTHORIZED');
-    } finally {
-      setIsAuthLoading(false);
-    }
-  }
-
   function handleLogout() {
     localStorage.removeItem('soc_token');
     localStorage.removeItem('soc_user');
-    setIsAuthenticated(false);
-    setUser(null);
+    window.location.href = '/login'; // Force a clean redirect
   }
 
   async function fetchIncidents() {
@@ -81,17 +53,19 @@ export default function Dashboard() {
     }
   }
 
-
   return (
     <div className="flex min-h-screen bg-[#020617] text-slate-300 font-sans selection:bg-indigo-500/30">
       
       {/* SIDEBAR NAVIGATION */}
-      <aside className="w-full md:w-64 border-r border-slate-800/60 bg-slate-900/20 backdrop-blur-md flex flex-col sticky top-0 h-screen">
-        <div className="p-6 mb-4">
-          <h3 className="block text-s font-black text-white italic">
+      {/* Fixed: changed w-full to w-20 for mobile, md:w-64 for desktop */}
+      <aside className="w-20 md:w-64 border-r border-slate-800/60 bg-slate-900/20 backdrop-blur-md flex flex-col sticky top-0 h-screen">
+        <div className="p-6 mb-4 flex flex-col items-center md:items-start">
+          {/* Logo: Hidden text on mobile, shown on desktop */}
+          <h3 className="hidden md:block text-sm font-black text-white italic">
             SOC <span className="text-indigo-500">COMMAND</span>
           </h3>
-          <div className="text-2xl font-black text-indigo-500 text-center">S</div>
+          {/* Mobile Icon: Shown on mobile, hidden on desktop */}
+          <div className="md:hidden text-2xl font-black text-indigo-500">S</div>
         </div>
 
         <nav className="flex-1 px-3 space-y-2">
@@ -99,20 +73,21 @@ export default function Dashboard() {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+              className={`w-full flex items-center justify-center md:justify-start gap-4 px-4 py-3 rounded-xl transition-all ${
                 activeTab === item.id 
                   ? 'bg-indigo-600/20 text-white border border-indigo-500/30 shadow-lg shadow-indigo-500/10' 
                   : 'hover:bg-slate-800/40 text-slate-500 hover:text-slate-300'
               }`}
             >
               <span className="text-xl">{item.icon}</span>
-              / <span className="hidden md:block font-bold text-xs uppercase tracking-wider">{item.label}</span>
+              {/* Text: Hidden on mobile, shown on desktop */}
+              <span className="hidden md:block font-bold text-xs uppercase tracking-wider">{item.label}</span>
             </button>
           ))}
         </nav>
 
         <div className="p-4 border-t border-slate-800/40">
-          <button onClick={handleLogout} className="w-full flex items-center gap-4 px-4 py-3 text-slate-500 hover:text-rose-400 transition-colors group">
+          <button onClick={handleLogout} className="w-full flex items-center justify-center md:justify-start gap-4 px-4 py-3 text-slate-500 hover:text-rose-400 transition-colors group">
             <span className="group-hover:animate-pulse">🚪</span>
             <span className="hidden md:block font-bold text-xs uppercase tracking-wider">Sign Out</span>
           </button>
@@ -127,7 +102,7 @@ export default function Dashboard() {
               <div>
                 <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight italic uppercase">Security Incidents</h2>
                 <p className="text-[10px] font-bold text-slate-500 tracking-[0.2em] uppercase">
-                  {user?.name} • ACTIVE COMMAND SESSION
+                  {user?.name || 'OPERATOR'} • ACTIVE COMMAND SESSION
                 </p>
               </div>
               {user?.role !== 'viewer' && (
@@ -171,20 +146,13 @@ export default function Dashboard() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/90 backdrop-blur-sm">
           <div className="bg-slate-900 border-t md:border border-slate-800 rounded-t-[2rem] md:rounded-[2rem] w-full max-w-md p-8 shadow-2xl">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">Submit Intel</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">✕</button>
+            <div className="flex justify-between items-center mb-6">
+               <h3 className="text-white font-black italic uppercase tracking-tighter">New Log Entry</h3>
+               <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white">✕</button>
             </div>
-            <form className="space-y-4">
-              <input className="w-full bg-slate-950 p-4 rounded-2xl border border-slate-800 text-sm text-white outline-none focus:border-indigo-500" placeholder="Incident Title" />
-              <div className="grid grid-cols-2 gap-3">
-                <select className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs text-slate-400 outline-none"><option>Severity</option></select>
-                <select className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs text-slate-400 outline-none"><option>Status</option></select>
-              </div>
-              <button className="w-full bg-indigo-600 text-white p-4 rounded-2xl font-black text-xs mt-2 hover:bg-indigo-500 shadow-xl uppercase tracking-widest transition-all">
-                Broadcast Alert
-              </button>
-            </form>
+            {/* Form content goes here */}
+            <p className="text-slate-500 text-xs mb-6">Enter protocol details to initialize incident report.</p>
+            <button className="w-full bg-indigo-600 text-white font-bold p-4 rounded-2xl" onClick={() => setIsModalOpen(false)}>SUBMIT REPORT</button>
           </div>
         </div>
       )}
@@ -192,40 +160,28 @@ export default function Dashboard() {
   );
 }
 
+// --- SUB-COMPONENTS ---
 function StatCard({ icon, label, count, className = "" }) {
   return (
-    <div className={`bg-slate-900/60 p-5 md:p-7 rounded-3xl border border-slate-800/50 flex items-center gap-5 ${className} hover:border-slate-700 transition-colors group`}>
-      <span className="text-3xl group-hover:scale-110 transition-transform">{icon}</span>
-      <div>
-        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{label}</p>
-        <p className="text-2xl font-bold text-white tracking-tighter">{count}</p>
-      </div>
+    <div className={`bg-slate-900/40 border border-slate-800/60 p-4 md:p-6 rounded-3xl backdrop-blur-sm ${className}`}>
+      <div className="text-2xl mb-2">{icon}</div>
+      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{label}</div>
+      <div className="text-2xl font-black text-white italic">{count}</div>
     </div>
   );
 }
 
 function IncidentRow({ incident }) {
-  const sevMap = { Critical: '💀', High: '🟠', Medium: '🔵', Low: '⚪' };
   return (
-    <div className="p-5 flex items-center justify-between hover:bg-slate-800/30 transition-all cursor-pointer group">
-      <div className="flex items-center gap-5">
-        <span className="text-xl">{sevMap[incident.severity] || '🔹'}</span>
+    <div className="px-6 py-4 flex items-center justify-between hover:bg-slate-800/20 transition-colors">
+      <div className="flex items-center gap-4">
+        <span className={`h-2 w-2 rounded-full ${incident.severity === 'Critical' ? 'bg-rose-500' : 'bg-amber-500'}`}></span>
         <div>
-          <h4 className="text-sm font-bold text-slate-200 group-hover:text-indigo-400 transition-colors">{incident.title}</h4>
-          <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-1">
-             {incident.created_at ? new Date(incident.created_at).toLocaleTimeString() : 'Live'} • Local Terminal
-          </p>
+          <div className="text-xs font-bold text-slate-200 uppercase tracking-wide">{incident.title || 'Unknown Protocol'}</div>
+          <div className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{incident.id} • {incident.timestamp || 'Just Now'}</div>
         </div>
       </div>
-      <div className="flex items-center gap-8">
-        <span className="hidden md:inline text-[8px] font-black text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full bg-indigo-500/10 uppercase tracking-[0.2em]">
-          {incident.severity}
-        </span>
-        <div className="text-right">
-          <p className="text-[8px] font-black text-slate-700 uppercase tracking-tighter">Status</p>
-          <p className="text-[10px] font-bold text-slate-400 uppercase">{incident.status}</p>
-        </div>
-      </div>
+      <div className="text-[10px] font-black text-indigo-500 italic uppercase">View Detail</div>
     </div>
   );
 }
