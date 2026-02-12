@@ -1,16 +1,21 @@
 import axios from 'axios';
 import { API_CONFIG } from '../config/apiConfig';
 
+/**
+ * Pre-configured Axios instance for SOC Command
+ * Handles base settings and automatic security headers
+ */
 const apiClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
+    // Add any standard Bank Security headers here
     'X-System-ID': 'SOC-COMMAND-V1'
   }
 });
 
-// REQUEST: Attach the JWT token securely
+// REQUEST INTERCEPTOR: Automatically attach the JWT token to every request
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('soc_token');
@@ -22,17 +27,15 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// RESPONSE: Handle global security events
+// RESPONSE INTERCEPTOR: Global error handling (e.g., auto-logout on 401)
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // 401: Unauthorized (Token invalid or expired)
-    // 403: Forbidden (Authenticated but lacking permissions)
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      console.error("Security Alert: Session invalidated by server.");
+    if (error.response && error.response.status === 401) {
+      console.warn("Session Expired - Redirecting to Login");
       localStorage.removeItem('soc_token');
       localStorage.removeItem('soc_user');
-      window.location.href = '/login'; // Force hard redirect to clear state
+      window.location.href = '/login'; // Or your login route
     }
     return Promise.reject(error);
   }
