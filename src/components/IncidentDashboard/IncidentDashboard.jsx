@@ -92,8 +92,8 @@ export default function Dashboard() {
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">Restricted Access Terminal</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
-            <input type="text" placeholder="Operator ID" required className="w-full bg-slate-950 border border-slate-800 p-4 rounded-2xl text-white outline-none focus:border-indigo-500 transition-all" onChange={(e) => setLoginData({...loginData, username: e.target.value})} />
-            <input type="password" placeholder="Access Key" required className="w-full bg-slate-950 border border-slate-800 p-4 rounded-2xl text-white outline-none focus:border-indigo-500 transition-all" onChange={(e) => setLoginData({...loginData, password: e.target.value})} />
+            <input type="text" placeholder="Operator ID" required className="w-20 bg-slate-950 border border-slate-800 p-4 rounded-2xl text-white outline-none focus:border-indigo-500 transition-all" onChange={(e) => setLoginData({...loginData, username: e.target.value})} />
+            <input type="password" placeholder="Access Key" required className="w-20 bg-slate-950 border border-slate-800 p-4 rounded-2xl text-white outline-none focus:border-indigo-500 transition-all" onChange={(e) => setLoginData({...loginData, password: e.target.value})} />
             {authError && <p className="text-rose-500 text-[10px] font-black text-center uppercase tracking-widest">{authError}</p>}
             <button disabled={isAuthLoading} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold p-4 rounded-2xl shadow-lg shadow-indigo-950/50 transition-all disabled:opacity-50">
               {isAuthLoading ? 'AUTHENTICATING...' : 'INITIALIZE SESSION'}
