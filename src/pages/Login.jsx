@@ -50,7 +50,7 @@ const Login = () => {
         <div className="flex flex-col items-center mb-8">
           <ShieldAlert className="w-16 h-16 text-indigo-500 mb-2" />
           <h1 className="text-xl font-black text-center text-white italic uppercase tracking-tighter">
-            SOC <span className="text-indigo-500">COMMAND</span>
+            DIB <span className="text-indigo-500">SECURE LOGIN</span>
           </h1>
         </div>
         <form onSubmit={handleLogin} className="space-y-4">

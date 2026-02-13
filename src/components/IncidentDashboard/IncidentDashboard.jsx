@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import apiClient from '../../utils/apiClient';
 import { API_CONFIG } from '../../config/apiConfig';
 // Ensure Chat is correctly imported or defined
-// import Chat from './Chat'; 
+import Chat from '../Chat'; 
 
 export default function Dashboard() {
   // --- AUTHENTICATION & UI STATE ---
@@ -38,27 +38,6 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Webhook Trigger for n8n
-  useEffect(() => {
-    if (activeTab === 'chat') {
-      triggerChatWebhook();
-    }
-  }, [activeTab]);
-
-  async function triggerChatWebhook() {
-    try {
-      // UPDATED: Points to your specific n8n Chat Webhook
-      await apiClient.post('https://n8n.tenear.com/webhook/bank/chat', {
-        event: "CHAT_OPENED",
-        user: user?.name || 'Unknown',
-        timestamp: new Date().toISOString(),
-        role: user?.role || 'operator'
-      });
-      console.log("n8n Chat Notification Sent");
-    } catch (err) {
-      console.error("Webhook trigger failed:", err);
-    }
-  }
 
   function handleLogout() {
     localStorage.removeItem('soc_token');
@@ -160,11 +139,8 @@ export default function Dashboard() {
             <h2 className="text-2xl font-black text-white border-b-4 border-indigo-500 inline-block pb-1 mb-8 uppercase italic">
               Secure Bank Chat
             </h2>
-            {/* Replace with your actual Chat component */}
-            <div className="bg-slate-900/40 p-10 rounded-3xl border border-slate-800/60">
-              <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Terminal Initialized...</p>
-              {/* <Chat /> */}
-            </div>
+            {/* This now renders the actual Chat logic and UI */}
+            <Chat /> 
           </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-700">
