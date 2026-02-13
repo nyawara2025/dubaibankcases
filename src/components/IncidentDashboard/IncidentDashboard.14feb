@@ -135,12 +135,13 @@ export default function Dashboard() {
             </div>
           </div>
         ) : activeTab === 'chat' ? (
-          <div className="flex-1 w-full max-w-5xl mx-auto animate-in fade-in duration-700 pb-10">
+          <div className="animate-in fade-in duration-700">
             <h2 className="text-2xl font-black text-white border-b-4 border-indigo-500 inline-block pb-1 mb-8 uppercase italic">
               Secure Bank Chat
             </h2>
+            {/* This now renders the actual Chat logic and UI */}
             <Chat /> 
-         </div>
+          </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-700">
              <div className="text-6xl mb-4 opacity-20 italic font-black uppercase">Offline</div>
