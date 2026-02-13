@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ShieldAlert, Lock } from 'lucide-react';
 import apiClient from '../utils/apiClient';
 
 const Login = () => {
@@ -18,56 +19,60 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Points to your n8n 'Authentication' Webhook
-      const response = await apiClient.post('webhook/bank/auth/login', credentials);
-      console.log("n8n Response:", response.data);
+      const response = await apiClient.post('https://n8n.tenear.com/webhook/bank/auth/login', {
+        event: "LOGIN_ATTEMPT",
+        user: credentials.username,
+        password: credentials.password, // No longer empty
+        timestamp: new Date().toISOString()
+      });
 
-      if (response.data && response.data.token) {
-        localStorage.setItem('soc_token', response.data.token);
-        localStorage.setItem('soc_user', JSON.stringify(response.data.user));
-        navigate('/'); // Move to Dashboard
+      // Match the storage expected by IncidentDashboard.jsx
+      if (response.data && (response.data.token || response.data.status === 'success')) {
+        localStorage.setItem('soc_token', response.data.token || 'authenticated-session');
+        localStorage.setItem('soc_user', JSON.stringify({
+            name: credentials.username,
+            role: response.data.role || 'operator'
+        }));
+        navigate('/'); 
       } else {
-        setError('Invalid server response. Contact SOC Admin.');
+        setError('Access Denied: Invalid Security Key');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Access Denied: Invalid Credentials');
+      setError('Authentication Server Unreachable');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <div className="bg-white p-8 rounded shadow-2xl w-96 border-t-4 border-blue-900">
-        <h2 className="text-2xl font-bold text-blue-900 mb-6">Security Portal Login</h2>
-        <form onSubmit={handleLogin}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">Username</label>
-            <input
-              type="text"
-              name="username"
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-800"
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-800"
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          {error && <p className="text-red-600 text-xs italic mb-4">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-900 text-white font-bold py-2 rounded hover:bg-blue-800 transition duration-200"
-          >
-            {loading ? 'Verifying...' : 'Authorize Access'}
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+      <div className="bg-slate-900 w-full max-w-md p-8 rounded-2xl shadow-2xl border border-slate-800">
+        <div className="flex flex-col items-center mb-8">
+          <ShieldAlert className="w-16 h-16 text-indigo-500 mb-2" />
+          <h1 className="text-xl font-black text-center text-white italic uppercase tracking-tighter">
+            SOC <span className="text-indigo-500">COMMAND</span>
+          </h1>
+        </div>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input
+            type="text"
+            name="username"
+            placeholder="OPERATOR ID"
+            className="w-full p-4 bg-slate-800 border border-slate-700 rounded-lg text-white font-bold outline-none focus:border-indigo-500"
+            onChange={handleInputChange}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="SECURITY KEY"
+            className="w-full p-4 bg-slate-800 border border-slate-700 rounded-lg text-white font-bold outline-none focus:border-indigo-500"
+            onChange={handleInputChange}
+            required
+          />
+          {error && <p className="text-rose-500 text-[10px] font-black uppercase text-center">{error}</p>}
+          <button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-lg font-black tracking-widest flex items-center justify-center gap-2 transition-all">
+            <Lock size={18} /> {loading ? 'VERIFYING...' : 'AUTHORIZE'}
           </button>
         </form>
       </div>

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../../utils/apiClient';
 import { API_CONFIG } from '../../config/apiConfig';
-// Ensure Chat is correctly imported or defined
-// import Chat from './Chat'; 
 
 export default function Dashboard() {
   // --- AUTHENTICATION & UI STATE ---
@@ -22,7 +20,6 @@ export default function Dashboard() {
     { id: 'notices', label: 'Directives', icon: '📜' },
   ];
 
-  // Load user session
   useEffect(() => {
     const savedUser = localStorage.getItem('soc_user');
     const token = localStorage.getItem('soc_token');
@@ -38,32 +35,10 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Webhook Trigger for n8n
-  useEffect(() => {
-    if (activeTab === 'chat') {
-      triggerChatWebhook();
-    }
-  }, [activeTab]);
-
-  async function triggerChatWebhook() {
-    try {
-      // UPDATED: Points to your specific n8n Chat Webhook
-      await apiClient.post('https://n8n.tenear.com/webhook/bank/chat', {
-        event: "CHAT_OPENED",
-        user: user?.name || 'Unknown',
-        timestamp: new Date().toISOString(),
-        role: user?.role || 'operator'
-      });
-      console.log("n8n Chat Notification Sent");
-    } catch (err) {
-      console.error("Webhook trigger failed:", err);
-    }
-  }
-
   function handleLogout() {
     localStorage.removeItem('soc_token');
     localStorage.removeItem('soc_user');
-    window.location.href = '/login';
+    window.location.href = '/login'; // Force a clean redirect
   }
 
   async function fetchIncidents() {
@@ -82,11 +57,14 @@ export default function Dashboard() {
     <div className="flex min-h-screen bg-[#020617] text-slate-300 font-sans selection:bg-indigo-500/30">
       
       {/* SIDEBAR NAVIGATION */}
+      {/* Fixed: changed w-full to w-20 for mobile, md:w-64 for desktop */}
       <aside className="w-20 md:w-64 border-r border-slate-800/60 bg-slate-900/20 backdrop-blur-md flex flex-col sticky top-0 h-screen">
         <div className="p-6 mb-4 flex flex-col items-center md:items-start">
+          {/* Logo: Hidden text on mobile, shown on desktop */}
           <h3 className="hidden md:block text-sm font-black text-white italic">
             SOC <span className="text-indigo-500">COMMAND</span>
           </h3>
+          {/* Mobile Icon: Shown on mobile, hidden on desktop */}
           <div className="md:hidden text-2xl font-black text-indigo-500">S</div>
         </div>
 
@@ -102,6 +80,7 @@ export default function Dashboard() {
               }`}
             >
               <span className="text-xl">{item.icon}</span>
+              {/* Text: Hidden on mobile, shown on desktop */}
               <span className="hidden md:block font-bold text-xs uppercase tracking-wider">{item.label}</span>
             </button>
           ))}
@@ -155,24 +134,18 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        ) : activeTab === 'chat' ? (
-          <div className="animate-in fade-in duration-700">
-            <h2 className="text-2xl font-black text-white border-b-4 border-indigo-500 inline-block pb-1 mb-8 uppercase italic">
-              Secure Bank Chat
-            </h2>
-            {/* Replace with your actual Chat component */}
-            <div className="bg-slate-900/40 p-10 rounded-3xl border border-slate-800/60">
-              <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Terminal Initialized...</p>
-              {/* <Chat /> */}
-            </div>
-          </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-700">
-             <div className="text-6xl mb-4 opacity-20 italic font-black uppercase">Offline</div>
-             <p className="text-slate-600 font-bold uppercase tracking-[0.4em] text-[10px]">
-               The {activeTab} module is currently under maintenance
-             </p>
+             <div className="text-6xl mb-4 opacity-20 italic font-black">OFFLINE</div>
+             <p className="text-slate-600 font-bold uppercase tracking-[0.4em] text-[10px]">The {activeTab} module is currently under maintenance</p>
           </div>
+
+          <>
+            <h2 className="text-2xl font-black text-slate-800 border-b-8 border-[#003366] inline-block pb-1 mb-8 uppercase">Bank Chat</h2>
+            <Chat />
+          </>
+
+
         )}
       </main>
 
@@ -184,7 +157,9 @@ export default function Dashboard() {
                <h3 className="text-white font-black italic uppercase tracking-tighter">New Log Entry</h3>
                <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white">✕</button>
             </div>
-            {/* Add your form here */}
+            {/* Form content goes here */}
+            <p className="text-slate-500 text-xs mb-6">Enter protocol details to initialize incident report.</p>
+            <button className="w-full bg-indigo-600 text-white font-bold p-4 rounded-2xl" onClick={() => setIsModalOpen(false)}>SUBMIT REPORT</button>
           </div>
         </div>
       )}
@@ -192,10 +167,17 @@ export default function Dashboard() {
   );
 }
 
-// Sub-components for clean rendering
+<button onClick={() => setActiveTab('chat')} className="flex flex-col items-center ...">
+  <MessageSquare size={32} />
+  <span className="text-xs font-black uppercase mt-1">Chat</span>
+</button>
+
+
+
+// --- SUB-COMPONENTS ---
 function StatCard({ icon, label, count, className = "" }) {
   return (
-    <div className={`bg-slate-900/40 border border-slate-800/60 p-6 rounded-3xl backdrop-blur-sm ${className}`}>
+    <div className={`bg-slate-900/40 border border-slate-800/60 p-4 md:p-6 rounded-3xl backdrop-blur-sm ${className}`}>
       <div className="text-2xl mb-2">{icon}</div>
       <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{label}</div>
       <div className="text-2xl font-black text-white italic">{count}</div>
@@ -206,11 +188,14 @@ function StatCard({ icon, label, count, className = "" }) {
 function IncidentRow({ incident }) {
   return (
     <div className="px-6 py-4 flex items-center justify-between hover:bg-slate-800/20 transition-colors">
-      <div>
-        <div className="text-sm font-bold text-white uppercase">{incident.title || 'Untitled Breach'}</div>
-        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{incident.severity} • {incident.status}</div>
+      <div className="flex items-center gap-4">
+        <span className={`h-2 w-2 rounded-full ${incident.severity === 'Critical' ? 'bg-rose-500' : 'bg-amber-500'}`}></span>
+        <div>
+          <div className="text-xs font-bold text-slate-200 uppercase tracking-wide">{incident.title || 'Unknown Protocol'}</div>
+          <div className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{incident.id} • {incident.timestamp || 'Just Now'}</div>
+        </div>
       </div>
-      <div className="text-xs font-mono text-indigo-400">#{incident.id.slice(0, 8)}</div>
+      <div className="text-[10px] font-black text-indigo-500 italic uppercase">View Detail</div>
     </div>
   );
 }
