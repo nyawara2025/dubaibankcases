@@ -89,8 +89,18 @@ export default function Dashboard() {
   const exportPDF = async () => {
     // This triggers your n8n PDF generation webhook
     try {
-      const response = await apiClient.post('/webhooks/generate-pdf', { data: incidents });
-      if(response.data.url) window.open(response.data.url, '_blank');
+      const response = await apiClient.post('https://n8n.tenear.com/webhook/generate-pdf', { data: incidents }, { responseType: 'blob' });
+      
+      // 2. Create a local "Virtual URL" for the file data n8n just sent
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+    
+      // 3. Open that virtual URL in a new tab
+      window.open(url, '_blank');
+
+      // 4. Clean up the memory after a short delay
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+      
     } catch (err) {
       alert("PDF generation failed. Check n8n connection.");
     }
