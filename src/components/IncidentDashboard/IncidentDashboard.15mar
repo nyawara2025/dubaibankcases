@@ -105,24 +105,13 @@ export default function Dashboard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    
     try {
-      await apiClient.post('https://n8n.tenear.com/webhook/input-bank-incident', formData);
-      
-      // Reset form
-      setFormData({
-        case_no: '', date_of_incident: '', outcome: '', incident_type: '',
-        channel: '', description: '', amount_involved: '', amount_recovered: '',
-        amount_lost: '', branch: ''
-      });
-      
+      await apiClient.post(API_CONFIG.ENDPOINTS.LOG_INCIDENT, formData);
       setIsModalOpen(false);
       fetchIncidents();
-      alert("Incident Logged Successfully!");
-      
+      setFormData({ case_no: '', date_of_incident: '', outcome: '', incident_type: '', channel: '', description: '', amount_involved: '', amount_recovered: '', amount_lost: '', branch: '' });
     } catch (err) {
       console.error("Submission error", err);
-      alert("Failed to log incident. Please check n8n connection.");
     } finally {
       setSubmitting(false);
     }
