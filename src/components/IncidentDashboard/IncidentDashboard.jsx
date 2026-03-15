@@ -131,37 +131,22 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-[#020617] text-slate-300 font-sans selection:bg-indigo-500/30">
       
-      {/* SIDEBAR */}
-      <aside className="hidden md:flex w-64 border-r border-slate-800/60 bg-slate-900/20 backdrop-blur-md flex-col sticky top-0 h-screen">
-        <div className="p-6 mb-4 flex flex-col items-center md:items-start">
-          <h3 className="hidden md:block text-sm font-black text-white italic">
-            SOC <span className="text-indigo-500">COMMAND</span>
-          </h3>
-        </div>
-
-        <nav className="flex-1 px-4 space-y-2">
+      {/* SIDEBAR - Fixed for Mobile & Desktop */}
+      <aside className="fixed bottom-0 w-full bg-slate-900/90 backdrop-blur-md border-t border-slate-800 z-50 md:relative md:flex md:w-64 md:border-r md:border-t-0 flex-row md:flex-col h-16 md:h-screen">
+        <nav className="flex flex-row md:flex-col w-full justify-around md:justify-start p-2 md:p-4 md:space-y-2">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 ${
-                activeTab === item.id 
-                ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.1)]' 
-                : 'hover:bg-slate-800/40 text-slate-500'
+              className={`flex flex-col md:flex-row items-center gap-1 md:gap-4 px-3 py-2 rounded-xl transition-all ${
+                activeTab === item.id ? 'text-indigo-400' : 'text-slate-500'
               }`}
             >
               <span className="text-xl">{item.icon}</span>
-              <span className="font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
+              <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest">{item.label}</span>
             </button>
           ))}
         </nav>
-
-        <div className="p-4 border-t border-slate-800/40">
-          <button onClick={handleLogout} className="w-full flex items-center gap-4 px-4 py-3 text-slate-500 hover:text-rose-400 transition-colors group">
-            <span>🚪</span>
-            <span className="font-bold text-xs uppercase tracking-wider">Sign Out</span>
-          </button>
-        </div>
       </aside>
 
       {/* MAIN CONTENT */}
