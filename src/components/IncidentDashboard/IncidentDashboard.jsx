@@ -224,7 +224,7 @@ export default function Dashboard() {
                           <td className="p-4 pl-8 text-xs font-mono text-indigo-400">{incident.case_no}</td>
                           <td className="p-4 text-xs font-bold text-white uppercase">{incident.incident_type}</td>
                           <td className="p-4 text-[10px] text-slate-500 uppercase">{incident.channel}</td>
-                          <td className="p-4 text-right pr-8 text-xs font-bold text-emerald-400">${incident.amount_involved}</td>
+                          <td className="p-4 text-right pr-8 text-xs font-bold text-emerald-400">KES {incident.amount_involved}</td>
                         </tr>
                       ))
                     ) : (
