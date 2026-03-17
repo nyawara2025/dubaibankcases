@@ -20,6 +20,7 @@ export default function Dashboard() {
     case_no: '',
     date_of_incident: '',
     outcome: '',
+    status: 'Open',
     incident_type: '',
     channel: '',
     description: '',
@@ -280,6 +281,32 @@ export default function Dashboard() {
                 <label className="text-[10px] font-black uppercase text-slate-500 ml-1">Amount Recovered</label>
                 <input type="number" name="amount_recovered" value={formData.amount_recovered} onChange={handleInputChange} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-sm" placeholder="0.00" />
               </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-1">Case Status</label>
+                <select 
+                  name="status" 
+                  value={formData.status} 
+                  onChange={handleInputChange} 
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 text-white"
+                >
+                  <option value="open">Open</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+
+              {/* Outcome Text Input (Full Width) */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-1">Case Outcome</label>
+                <input 
+                  name="outcome" 
+                  value={formData.outcome} 
+                  onChange={handleInputChange} 
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500" 
+                  placeholder="Brief summary of resolution..." 
+                />
+              </div>
+
               <div className="md:col-span-2 space-y-2">
                 <label className="text-[10px] font-black uppercase text-slate-500 ml-1">Description</label>
                 <textarea name="description" rows="3" value={formData.description} onChange={handleInputChange} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-sm" placeholder="Detail the breach..."></textarea>
